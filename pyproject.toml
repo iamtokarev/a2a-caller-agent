@@ -1,0 +1,60 @@
+[project]
+name = "a2a-voice-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Vasilii Tokarev", email = "notsoyunng@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "langsmith[pipecat]>=0.12.2",
+    "loguru>=0.7.3",
+    "opentelemetry-exporter-otlp>=1.44.0",
+    "pipecat-ai[cartesia,deepgram,openrouter,runner,silero,webrtc]>=1.8.1",
+    "python-dotenv>=1.2.3",
+]
+
+[project.scripts]
+a2a-voice-agent = "a2a_voice_agent:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pre-commit>=4.6.2",
+    "ruff>=0.16.6",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["a2a_voice_agent"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src", "pipecat-bot"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true

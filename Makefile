@@ -16,3 +16,6 @@ typecheck:
 
 precommit:
 	uv run pre-commit run --all-files
+
+test:
+	uv run pytest

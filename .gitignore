@@ -19,3 +19,6 @@ wheels/
 .agents/
 .claude
 skills-lock.json
+
+# Local run records from manual calls
+runs/

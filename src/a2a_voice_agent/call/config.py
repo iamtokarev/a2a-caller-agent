@@ -35,7 +35,7 @@ class CallConfig(BaseSettings):
     environment: Environment = Field(default=Environment.PROD, validation_alias="ENVIRONMENT")
     tracing: bool = Field(default=False, validation_alias="LANGSMITH_TRACING")
 
-    llm_model: str = "openai/gpt-5.6-luna"
+    llm_model: str = "openai/gpt-5.6-terra"
     tts_model: str = "sonic-3.6"
 
     voice_id_override: str | None = None

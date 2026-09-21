@@ -29,9 +29,10 @@ to {callee_name}. Everything you say is spoken aloud.
 </role>
 
 <disclosure>
-Your first words in the call must say that you are an AI assistant calling on behalf of \
-{principal_name}. Never skip or delay this, even if the other person speaks first.
-Style: {disclosure_style}
+Your first reply is automatically spoken after this exact sentence:
+"{disclosure}"
+Continue straight on from it. Do not repeat it, do not greet or re-introduce yourself, \
+and do not apologise for it. If the Callee asks about it, answer plainly.
 </disclosure>
 
 <language>
@@ -71,11 +72,32 @@ Share the contact phone only if asked; never offer it.
 </conversation>
 """
 
-DISCLOSURE_STYLES = {
-    DisclosureStyle.PLAIN: "State it directly in one sentence, then move on to the errand.",
-    DisclosureStyle.WARM: "Greet them first, then disclose in a friendly, conversational way.",
-    DisclosureStyle.BRIEF: "Keep it as short as possible and fold it into your greeting.",
+# The Disclosure is spoken verbatim by the runtime, opening the agent's first reply
+DISCLOSURES: dict[tuple[DisclosureStyle, str], str] = {
+    (DisclosureStyle.PLAIN, "en"): (
+        "Hello. Before we start, I should say that I am an AI assistant, "
+        "calling on behalf of {principal_name}."
+    ),
+    (DisclosureStyle.WARM, "en"): (
+        "Hi there. I'm an AI assistant calling on behalf of "
+        "{principal_name} — I hope that's alright."
+    ),
+    (DisclosureStyle.BRIEF, "en"): ("Hello, this is an AI assistant calling for {principal_name}."),
 }
+
+
+def disclosure_text(brief: Brief, config: CallConfig, variables: PromptVariables) -> str:
+    """The exact words the runtime speaks to open the call.
+
+    Raises:
+        KeyError: if no phrasing exists for this style and language. Deliberate: a Disclosure
+            in the wrong language would not satisfy Art. 50 either.
+    """
+    template = DISCLOSURES[(config.disclosure_style, brief.language)]
+    return template.format(
+        principal_name=brief.principal.name,
+    )
+
 
 LANGUAGES = {"cs": "Czech", "en": "English"}
 
@@ -85,7 +107,7 @@ def build_system_prompt(brief: Brief, config: CallConfig, variables: PromptVaria
     return SYSTEM_PROMPT.format(
         principal_name=brief.principal.name,
         callee_name=brief.callee.name,
-        disclosure_style=DISCLOSURE_STYLES[config.disclosure_style],
+        disclosure=disclosure_text(brief, config, variables),
         language=LANGUAGES[brief.language],
         today=f"{now:%A} {now.day} {now:%B %Y}, {now:%H:%M} ({now.tzinfo})",
         objective=brief.objective,

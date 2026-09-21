@@ -1,5 +1,5 @@
-run bot:
-	uv run pipecat-bot/bot.py
+run:
+	uv run bot.py
 
 lint:
 	uv run ruff check .

@@ -61,7 +61,7 @@ addopts = ["--import-mode=importlib", "-ra"]
 
 [tool.mypy]
 python_version = "3.12"
-files = ["src", "tests"]
+files = ["src", "tests", "bot.py"]
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true

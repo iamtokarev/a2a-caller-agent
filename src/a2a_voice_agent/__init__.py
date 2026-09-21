@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from a2a-voice-agent!")
+"""A voice agent that places outbound calls on a person's behalf."""

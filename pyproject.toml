@@ -19,9 +19,6 @@ dependencies = [
     "python-dotenv>=1.2.3",
 ]
 
-[project.scripts]
-a2a-voice-agent = "a2a_voice_agent:main"
-
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
@@ -64,7 +61,7 @@ addopts = ["--import-mode=importlib", "-ra"]
 
 [tool.mypy]
 python_version = "3.12"
-files = ["src", "tests", "pipecat-bot"]
+files = ["src", "tests"]
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true

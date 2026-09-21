@@ -42,9 +42,9 @@ def make_brief(brief_data: dict[str, Any]) -> Callable[..., Brief]:
 
 @pytest.fixture
 def make_config(monkeypatch: pytest.MonkeyPatch) -> Callable[..., CallConfig]:
-    """Build a CallConfig from explicit values only, ignoring .env and shell CALL_* variables."""
+    """Build a CallConfig from explicit values only, ignoring .env and the shell's settings."""
     for name in list(os.environ):
-        if name.startswith("CALL_"):
+        if name.startswith("CALL_") or name in ("ENVIRONMENT", "LANGSMITH_TRACING"):
             monkeypatch.delenv(name)
 
     def _make(**overrides: Any) -> CallConfig:

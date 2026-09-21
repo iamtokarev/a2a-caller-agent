@@ -16,6 +16,11 @@ class DisclosureStyle(StrEnum):
     BRIEF = "brief"
 
 
+class Environment(StrEnum):
+    LOCAL = "local"
+    PROD = "prod"
+
+
 class CallConfig(BaseSettings):
     """Behavioural settings for a call"""
 
@@ -26,6 +31,9 @@ class CallConfig(BaseSettings):
         frozen=True,
         validate_by_name=True,
     )
+
+    environment: Environment = Field(default=Environment.PROD, validation_alias="ENVIRONMENT")
+    tracing: bool = Field(default=False, validation_alias="LANGSMITH_TRACING")
 
     llm_model: str = "openai/gpt-5.6-luna"
     tts_model: str = "sonic-3.6"

@@ -1,5 +1,5 @@
-run bot:
-	uv run pipecat-bot/bot.py
+run:
+	uv run bot.py
 
 lint:
 	uv run ruff check .
@@ -16,3 +16,6 @@ typecheck:
 
 precommit:
 	uv run pre-commit run --all-files
+
+test:
+	uv run pytest

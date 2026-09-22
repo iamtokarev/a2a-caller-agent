@@ -1,0 +1,19 @@
+{
+  "objective": "Book a table for four people this Saturday evening, around 19:00, under the name Vasilii Tokarev.",
+  "callee": {
+    "name": "Restaurace Modrá Konvice",
+    "number": "+420 212 345 678"
+  },
+  "constraints": [
+    {"description": "The booking must be for this Saturday, not another day.", "negotiable": false},
+    {"description": "The table must seat four people.", "negotiable": false},
+    {"description": "Around 19:00; any time between 18:30 and 20:00 is fine.", "negotiable": true},
+    {"description": "Indoor seating is preferred.", "negotiable": true}
+  ],
+  "principal": {
+    "name": "Vasilii Tokarev",
+    "contact_phone": "+420 777 123 456"
+  },
+  "language": "en",
+  "useful_until": "2026-09-19T18:00:00+02:00"
+}

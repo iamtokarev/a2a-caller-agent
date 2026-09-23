@@ -6,8 +6,8 @@ from zoneinfo import ZoneInfo
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict
 
-from a2a_voice_agent.call.config import CallConfig, DisclosureStyle
-from a2a_voice_agent.contract import Brief
+from a2a_voice_agent.call.config import CallConfig
+from a2a_voice_agent.contract import Brief, Language
 
 
 class PromptVariables(BaseModel):
@@ -74,30 +74,17 @@ Share the contact phone only if asked; never offer it.
 """
 
 # The Disclosure is spoken verbatim by the runtime, opening the agent's first reply
-DISCLOSURES: dict[tuple[DisclosureStyle, str], str] = {
-    (DisclosureStyle.PLAIN, "en"): (
+DISCLOSURES: dict[Language, str] = {
+    "en": (
         "Hello. Before we start, I should say that I am an AI assistant, "
         "calling on behalf of {principal_name}."
     ),
-    (DisclosureStyle.WARM, "en"): (
-        "Hi there. I'm an AI assistant calling on behalf of "
-        "{principal_name} — I hope that's alright."
-    ),
-    (DisclosureStyle.BRIEF, "en"): ("Hello, this is an AI assistant calling for {principal_name}."),
 }
 
 
-def disclosure_text(brief: Brief, config: CallConfig, variables: PromptVariables) -> str:
-    """The exact words the runtime speaks to open the call.
-
-    Raises:
-        KeyError: if no phrasing exists for this style and language. Deliberate: a Disclosure
-            in the wrong language would not satisfy Art. 50 either.
-    """
-    template = DISCLOSURES[(config.disclosure_style, brief.language)]
-    return template.format(
-        principal_name=brief.principal.name,
-    )
+def disclosure_text(brief: Brief) -> str:
+    """The exact words the runtime speaks to open the call."""
+    return DISCLOSURES[brief.language].format(principal_name=brief.principal.name)
 
 
 LANGUAGES = {"cs": "Czech", "en": "English"}
@@ -108,7 +95,7 @@ def build_system_prompt(brief: Brief, config: CallConfig, variables: PromptVaria
     return SYSTEM_PROMPT.format(
         principal_name=brief.principal.name,
         callee_name=brief.callee.name,
-        disclosure=disclosure_text(brief, config, variables),
+        disclosure=disclosure_text(brief),
         language=LANGUAGES[brief.language],
         today=f"{now:%A} {now.day} {now:%B %Y}, {now:%H:%M} ({now.tzinfo})",
         objective=brief.objective,

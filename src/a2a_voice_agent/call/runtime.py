@@ -125,7 +125,7 @@ async def run_call(
             user_mute_strategies=[FirstSpeechUserMuteStrategy()],
         ),
     )
-    disclosure = _DisclosureOnFirstResponse(disclosure_text(brief, config, variables))
+    disclosure = _DisclosureOnFirstResponse(disclosure_text(brief))
 
     audio_buffer = trace_call(config, conversation_id)
 

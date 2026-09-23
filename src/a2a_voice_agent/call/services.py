@@ -10,8 +10,8 @@ from a2a_voice_agent.contract import Brief
 
 _LANGUAGE: dict[str, Language] = {"en": Language.EN, "cs": Language.CS}
 _VOICES: dict[str, str] = {
-    "cs": "82db1f84-5b96-4364-b04a-4c7ff80e2f8a",
-    "en": "47c38ca4-5f35-497b-b1a3-415245fb35e1",
+    "cs": "82db1f84-5b96-4364-b04a-4c7ff80e2f8a",  # Jan - Capable Coordinator, cs-CZ
+    "en": "47c38ca4-5f35-497b-b1a3-415245fb35e1",  # Daniel - Modern Assistant, en-US
 }
 
 

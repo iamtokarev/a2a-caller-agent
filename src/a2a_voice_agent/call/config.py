@@ -8,14 +8,6 @@ from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class DisclosureStyle(StrEnum):
-    """Which Disclosure phrasing the prompt asks for."""
-
-    PLAIN = "plain"
-    WARM = "warm"
-    BRIEF = "brief"
-
-
 class Environment(StrEnum):
     LOCAL = "local"
     PROD = "prod"
@@ -39,7 +31,6 @@ class CallConfig(BaseSettings):
     tts_model: str = "sonic-3.6"
 
     voice_id_override: str | None = None
-    disclosure_style: DisclosureStyle = DisclosureStyle.PLAIN
     timezone: ZoneInfo = ZoneInfo("Europe/Prague")  # Fixed to Prague for v1
 
     stall_budget_secs: float = Field(default=60.0, gt=0)

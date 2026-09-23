@@ -1,0 +1,19 @@
+{
+  "objective": "Zarezervovat stůl pro čtyři osoby na tuto sobotu večer, kolem 19:00, na jméno Vasilii Tokarev.",
+  "callee": {
+    "name": "Restaurace Modrá Konvice",
+    "number": "+420 212 345 678"
+  },
+  "constraints": [
+    {"description": "Rezervace musí být na tuto sobotu, ne na jiný den.", "negotiable": false},
+    {"description": "Stůl musí být pro čtyři osoby.", "negotiable": false},
+    {"description": "Kolem 19:00; vyhovuje jakýkoli čas mezi 18:30 a 20:00.", "negotiable": true},
+    {"description": "Přednostně stůl uvnitř.", "negotiable": true}
+  ],
+  "principal": {
+    "name": "Vasilii Tokarev",
+    "contact_phone": "+420 777 123 456"
+  },
+  "language": "cs",
+  "useful_until": "2026-09-19T18:00:00+02:00"
+}

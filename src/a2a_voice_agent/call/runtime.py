@@ -119,6 +119,9 @@ async def run_call(
     context = LLMContext()
     aggregators = LLMContextAggregatorPair(
         context,
+        # Turn-taking keeps the framework's default stop strategy, Smart Turn v3, which does not
+        # cover Czech. A candidate to replace with a plain speech-timeout strategy for both
+        # languages if Czech turn-taking proves unreliable.
         user_params=LLMUserAggregatorParams(
             vad_analyzer=SileroVADAnalyzer(),
             # The Callee cannot barge in on the Disclosure.

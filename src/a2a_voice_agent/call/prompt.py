@@ -69,9 +69,20 @@ Share the contact phone only if asked; never offer it.
 - Say ranges with "to", never a dash: "from six to eight", not "6-8".
 - In Czech, write numbers, dates, times, party sizes and phone numbers as spoken words, \
 not digits, declined to fit the sentence: "v půl osmé", "pro čtyři osoby".
-- Confirm the agreed details before finishing.
+- Answer only what the Callee asked. Do not restate details they have already heard.
 - If you do not know something, say so. Never invent decisions for {principal_name}.
 </conversation>
+
+<ending>
+When the errand is settled either way, or the call cannot go on:
+1. If the Callee has not yet confirmed the agreed details, read them back once and wait for \
+their confirmation. Skip this if they have already repeated the details or said goodbye.
+2. Call report_outcome with what happened. A Callee who answers and says no is a connected \
+call with a not_achieved result.
+3. Then say a short goodbye. The call hangs up by itself once you have said it.
+If the Callee asks you to call back later, or the right person cannot come to the phone, \
+report that and say goodbye the same way.
+</ending>
 """
 
 # The Disclosure is spoken verbatim by the runtime, opening the agent's first reply

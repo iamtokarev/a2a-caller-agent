@@ -42,9 +42,9 @@ async def bot(runner_args: RunnerArguments) -> None:
     config = CallConfig()  # type: ignore[call-arg]
 
     transport = await create_transport(runner_args, transport_params)
-    await run_call(brief, transport, config, escalate)
+    outcome = await run_call(brief, transport, config, escalate)
 
-    # logger.info("Outcome: {}", outcome.model_dump_json())
+    logger.info("Outcome: {}", outcome.model_dump_json())
 
 
 if __name__ == "__main__":

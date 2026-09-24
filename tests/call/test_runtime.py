@@ -1,9 +1,12 @@
-"""The Disclosure opens the agent's first response, once, and the context records it that way."""
+"""The Disclosure opens the agent's first response, once, and the context records it that way;
+the call hangs up after the response that follows the Outcome."""
 
 import asyncio
+from collections.abc import Sequence
 
 from pipecat.frames.frames import (
     BotStartedSpeakingFrame,
+    EndWorkerFrame,
     Frame,
     InterruptionFrame,
     LLMFullResponseEndFrame,
@@ -15,7 +18,9 @@ from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.tests.utils import SleepFrame, run_test
 
-from a2a_voice_agent.call.runtime import _DisclosureOnFirstResponse
+from a2a_voice_agent.call.runtime import _DisclosureOnFirstResponse, _HangUpAfterGoodbye
+from a2a_voice_agent.call.session import CallSession
+from a2a_voice_agent.contract import Disposition, Outcome, Result
 
 DISCLOSURE = "Hello, this is an AI assistant calling for Vasilii Tokarev."
 
@@ -76,3 +81,26 @@ def test_disclosure_is_retried_when_interrupted_before_the_bot_spoke() -> None:
     ]
 
     assert _disclosures_pushed(frames) == 2
+
+
+BOOKED = Outcome(disposition=Disposition.CONNECTED, result=Result.ACHIEVED, summary="Table booked.")
+
+
+def _pushed_by_hang_up(session: CallSession, frames: list[Frame]) -> Sequence[Frame]:
+    down, _ = asyncio.run(
+        run_test(_HangUpAfterGoodbye(session), frames_to_send=frames, start_timeout=30)
+    )
+    return down
+
+
+def test_the_call_hangs_up_right_behind_the_goodbye() -> None:
+    down = _pushed_by_hang_up(CallSession(outcome=BOOKED), _response("Thank you, goodbye."))
+
+    assert isinstance(down[-1], EndWorkerFrame)
+    assert isinstance(down[-2], LLMFullResponseEndFrame)
+
+
+def test_the_call_stays_up_until_an_outcome_is_reported() -> None:
+    down = _pushed_by_hang_up(CallSession(), _response("For four people, please."))
+
+    assert not any(isinstance(frame, EndWorkerFrame) for frame in down)

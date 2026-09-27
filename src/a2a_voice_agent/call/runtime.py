@@ -1,5 +1,6 @@
 """Hold one call: build the pipeline, run it, return an Outcome."""
 
+import asyncio
 import uuid
 from collections.abc import Awaitable, Callable
 
@@ -7,12 +8,17 @@ from loguru import logger
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.frames.frames import (
     BotStartedSpeakingFrame,
+    CancelFrame,
+    CancelWorkerFrame,
+    EndFrame,
     EndWorkerFrame,
     Frame,
     InterruptionFrame,
     LLMFullResponseEndFrame,
     LLMFullResponseStartFrame,
+    LLMMessagesAppendFrame,
     LLMTextFrame,
+    StartFrame,
 )
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker
@@ -29,7 +35,12 @@ from pipecat.workers.runner import WorkerRunner
 
 from a2a_voice_agent.call.config import CallConfig
 from a2a_voice_agent.call.observability import trace_attributes, trace_call
-from a2a_voice_agent.call.prompt import PromptVariables, build_system_prompt, disclosure_text
+from a2a_voice_agent.call.prompt import (
+    PromptVariables,
+    build_system_prompt,
+    cap_warning,
+    disclosure_text,
+)
 from a2a_voice_agent.call.services import Services, build_services
 from a2a_voice_agent.call.session import CallSession
 from a2a_voice_agent.call.tools import TOOLS
@@ -107,10 +118,50 @@ class _HangUpAfterGoodbye(FrameProcessor):
             await self.push_frame(EndWorkerFrame(), FrameDirection.DOWNSTREAM)
 
 
+class _CallCap(FrameProcessor):
+    """Tell the agent to wrap up shortly before the call cap, then cancel the call at the cap.
+
+    Sits ahead of the user aggregator, so the warning is appended to the context and answered
+    straight away. The warning is skipped once an Outcome has been reported; the cancellation
+    happens whether or not the agent complied. The clock starts with the pipeline.
+    """
+
+    def __init__(self, session: CallSession, cap_secs: float, warning_lead_secs: float) -> None:
+        super().__init__()
+        self._session = session
+        self._cap_secs = cap_secs
+        self._warning_lead_secs = warning_lead_secs
+        self._timer: asyncio.Task[None] | None = None
+
+    async def process_frame(self, frame: Frame, direction: FrameDirection) -> None:
+        await super().process_frame(frame, direction)
+        await self.push_frame(frame, direction)
+
+        if isinstance(frame, StartFrame):
+            self._timer = self.create_task(self._run_timer())
+        elif isinstance(frame, EndFrame | CancelFrame) and self._timer:
+            await self.cancel_task(self._timer)
+            self._timer = None
+
+    async def _run_timer(self) -> None:
+        await asyncio.sleep(self._cap_secs - self._warning_lead_secs)
+        if self._session.outcome is None:
+            logger.warning("Call cap in {}s; telling the agent to wrap up", self._warning_lead_secs)
+            warning = cap_warning(self._warning_lead_secs)
+            await self.push_frame(
+                LLMMessagesAppendFrame([{"role": "system", "content": warning}], run_llm=True)
+            )
+        await asyncio.sleep(self._warning_lead_secs)
+        logger.warning("Call cap of {}s reached; cancelling the call", self._cap_secs)
+        self._session.cap_reached = True
+        await self.push_frame(CancelWorkerFrame(reason="call cap reached"))
+
+
 def _build_pipeline(
     transport: BaseTransport,
     services: Services,
     aggregators: LLMContextAggregatorPair,
+    call_cap: FrameProcessor,
     disclosure: FrameProcessor,
     hang_up: FrameProcessor,
     audio_buffer: AudioBufferProcessor | None,
@@ -121,6 +172,7 @@ def _build_pipeline(
         [
             transport.input(),
             services.stt,
+            call_cap,  # ahead of the user aggregator, which takes its warning into the context
             aggregators.user(),
             services.llm,
             disclosure,
@@ -141,7 +193,8 @@ async def run_call(
 ) -> Outcome:
     """Hold one call for ``brief`` over ``transport`` and return what happened.
 
-    A call that ends without the agent reporting an Outcome returns ``undetermined``.
+    A call that ends without the agent reporting an Outcome returns ``undetermined``. A call still
+    running at ``config.call_cap_secs`` is cancelled.
     """
     conversation_id = str(uuid.uuid4())
     logger.info(
@@ -168,13 +221,20 @@ async def run_call(
             user_mute_strategies=[FirstSpeechUserMuteStrategy()],
         ),
     )
+    call_cap = _CallCap(session, config.call_cap_secs, config.cap_warning_lead_secs)
     disclosure = _DisclosureOnFirstResponse(disclosure_text(brief))
 
     audio_buffer = trace_call(config, conversation_id)
 
     worker = PipelineWorker(
         _build_pipeline(
-            transport, services, aggregators, disclosure, _HangUpAfterGoodbye(session), audio_buffer
+            transport,
+            services,
+            aggregators,
+            call_cap,
+            disclosure,
+            _HangUpAfterGoodbye(session),
+            audio_buffer,
         ),
         name="callee_call",
         params=PipelineParams(enable_metrics=True, enable_usage_metrics=True),

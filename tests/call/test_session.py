@@ -39,3 +39,19 @@ def test_the_reported_outcome_is_returned_with_the_reason_for_hanging_up() -> No
 
     assert outcome.result is Result.ACHIEVED
     assert outcome.details == {"time": "19:00", "end_reason": "callee_requested_call_back"}
+
+
+def test_a_call_cut_off_at_the_cap_with_nothing_reported_is_undetermined() -> None:
+    outcome = CallSession(answered=True, cap_reached=True).final_outcome()
+
+    assert outcome.result is Result.UNDETERMINED
+    assert outcome.details["cap_reached"] is True
+
+
+def test_a_call_cut_off_at_the_cap_keeps_the_reported_outcome() -> None:
+    session = CallSession(outcome=BOOKED, end_reason=EndReason.CONCLUDED, cap_reached=True)
+
+    outcome = session.final_outcome()
+
+    assert outcome.result is Result.ACHIEVED
+    assert outcome.details["cap_reached"] is True

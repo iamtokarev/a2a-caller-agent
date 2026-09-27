@@ -1,16 +1,19 @@
 """The Disclosure opens the agent's first response, once, and the context records it that way;
-the call hangs up after the response that follows the Outcome."""
+the call hangs up after the response that follows the Outcome; a call is warned before the cap
+and cancelled at it."""
 
 import asyncio
 from collections.abc import Sequence
 
 from pipecat.frames.frames import (
     BotStartedSpeakingFrame,
+    CancelWorkerFrame,
     EndWorkerFrame,
     Frame,
     InterruptionFrame,
     LLMFullResponseEndFrame,
     LLMFullResponseStartFrame,
+    LLMMessagesAppendFrame,
     LLMTextFrame,
 )
 from pipecat.pipeline.pipeline import Pipeline
@@ -18,7 +21,11 @@ from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.tests.utils import SleepFrame, run_test
 
-from a2a_voice_agent.call.runtime import _DisclosureOnFirstResponse, _HangUpAfterGoodbye
+from a2a_voice_agent.call.runtime import (
+    _CallCap,
+    _DisclosureOnFirstResponse,
+    _HangUpAfterGoodbye,
+)
 from a2a_voice_agent.call.session import CallSession
 from a2a_voice_agent.contract import Disposition, Outcome, Result
 
@@ -104,3 +111,23 @@ def test_the_call_stays_up_until_an_outcome_is_reported() -> None:
     down = _pushed_by_hang_up(CallSession(), _response("For four people, please."))
 
     assert not any(isinstance(frame, EndWorkerFrame) for frame in down)
+
+
+def _pushed_by_call_cap(session: CallSession) -> list[type[Frame]]:
+    """Run a call past a short cap and return the cap's own frames, in order."""
+    call_cap = _CallCap(session, cap_secs=0.1, warning_lead_secs=0.05)
+    down, _ = asyncio.run(
+        run_test(call_cap, frames_to_send=[SleepFrame(sleep=0.2)], start_timeout=30)
+    )
+    return [type(f) for f in down if isinstance(f, LLMMessagesAppendFrame | CancelWorkerFrame)]
+
+
+def test_the_agent_is_told_to_wrap_up_before_the_call_is_cancelled_at_the_cap() -> None:
+    session = CallSession()
+
+    assert _pushed_by_call_cap(session) == [LLMMessagesAppendFrame, CancelWorkerFrame]
+    assert session.cap_reached
+
+
+def test_the_call_is_cancelled_at_the_cap_even_after_an_outcome_is_reported() -> None:
+    assert _pushed_by_call_cap(CallSession(outcome=BOOKED)) == [CancelWorkerFrame]

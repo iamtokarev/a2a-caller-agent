@@ -42,8 +42,14 @@ The statement, made first in every call, that this is an AI and which Principal 
 by EU AI Act Art. 50, not a courtesy.
 
 **Escalation**:
-A pause in which the agent puts a question it has no authority to answer to the Client, and waits for
-an answer before continuing.
+A pause in which the agent puts a question it has no authority to answer to the Principal, and waits
+for an answer before continuing. The Client relays both the question and the answer.
+The question is written in English, whatever language the call is held in.
+
+**Stall**:
+The time the agent holds the line during an Escalation while it waits for an answer. The
+conversation stays open, but nothing the question covers is agreed; fixed speech fills the silence.
+Bounded by the stall budget; when that runs out, the agent offers a Call-back instead.
 
 **Call-back**:
 A second call to the same Callee, placed to finish an Objective after an Escalation could not be
@@ -53,6 +59,7 @@ resolved while the line was open.
 
 **Outcome**:
 The structured result returned when a call ends. Data the Client can act on, not a narrative.
+Written in English, whatever language the call is held in: the Client reads it, not the Callee.
 _Avoid_: report, response
 
 **Disposition**:

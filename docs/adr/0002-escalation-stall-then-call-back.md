@@ -1,12 +1,12 @@
 # Escalation: stall on the line, then call back
 
-When the agent hits a decision that is not its to make, it tells the Callee it is checking, holds the
-line for a **stall budget of roughly 60 seconds** while the Client is asked, and if no answer arrives
-in that time it **proactively offers a Call-back**, ends politely, and places a second call once the
-Principal replies. Two triggers open an Escalation: the only way forward would break a
-**non-negotiable Constraint**, or the Callee asks for information or a decision the Brief does not
-cover. Bending a **negotiable** Constraint is explicitly *not* a trigger — the agent does it and
-reports what it bent in the Outcome.
+When the agent hits a decision that is not its to make, it tells the Callee it is checking, holds
+the line for a **stall budget of roughly 60 seconds** while the Principal is asked through the
+Client, and if no answer arrives in that time it **proactively offers a Call-back**, ends politely,
+and places a second call once the Principal replies. Two triggers open an Escalation: the only way
+forward would break a **non-negotiable Constraint**, or the Callee asks for information or a
+decision the Brief does not cover. Bending a **negotiable** Constraint is explicitly *not* a trigger
+— the agent does it and reports what it bent in the Outcome.
 
 A Call-back continues the **same A2A task** (the Client answered on it, and the Outcome belongs to
 the original Brief) but starts a **fresh conversation**: the Disclosure is repeated, the request is

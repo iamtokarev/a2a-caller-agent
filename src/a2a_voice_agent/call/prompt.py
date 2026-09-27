@@ -85,6 +85,19 @@ report that and say goodbye the same way.
 </ending>
 """
 
+# Injected shortly before the call cap, so the call ends politely with a real Outcome
+CAP_WARNING = """\
+The call will be cut off in about {seconds:.0f} seconds. Wrap up now: tell the Callee politely \
+that you have to end the call, and do not raise anything new. If details were agreed but not yet \
+confirmed, confirm them in one sentence. Then call report_outcome with what you know so far, \
+and say a short goodbye."""
+
+
+def cap_warning(seconds_left: float) -> str:
+    """The instruction that tells the agent to wrap up before the call cap."""
+    return CAP_WARNING.format(seconds=seconds_left)
+
+
 # The Disclosure is spoken verbatim by the runtime, opening the agent's first reply
 DISCLOSURES: dict[Language, str] = {
     "en": (

@@ -2,7 +2,7 @@
 Disposition the runtime observed."""
 
 from a2a_voice_agent.call.session import CallSession, EndReason
-from a2a_voice_agent.contract import Disposition, Outcome, Result
+from a2a_voice_agent.contract import Disposition, Escalation, Outcome, Result
 
 BOOKED = Outcome(
     disposition=Disposition.CONNECTED,
@@ -55,3 +55,32 @@ def test_a_call_cut_off_at_the_cap_keeps_the_reported_outcome() -> None:
 
     assert outcome.result is Result.ACHIEVED
     assert outcome.details["cap_reached"] is True
+
+
+def test_an_escalation_still_open_at_hang_up_is_recorded_in_the_outcome(
+    booking_question: Escalation,
+) -> None:
+    session = CallSession(
+        outcome=BOOKED,
+        end_reason=EndReason.ESCALATION_UNANSWERED,
+        pending_escalation=booking_question,
+    )
+
+    details = session.final_outcome().details
+
+    assert details["pending_escalation"] == {
+        "question": "The only table on Saturday is at 21:00. Is that acceptable?",
+        "options": ["Take 21:00", "Decline"],
+    }
+    assert details["end_reason"] == "escalation_unanswered"
+
+
+def test_a_callee_hanging_up_mid_stall_still_records_the_open_question(
+    booking_question: Escalation,
+) -> None:
+    session = CallSession(answered=True, pending_escalation=booking_question)
+
+    outcome = session.final_outcome()
+
+    assert outcome.result is Result.UNDETERMINED
+    assert outcome.details["pending_escalation"]["question"] == booking_question.question

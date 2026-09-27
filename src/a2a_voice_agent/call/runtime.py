@@ -2,7 +2,6 @@
 
 import asyncio
 import uuid
-from collections.abc import Awaitable, Callable
 
 from loguru import logger
 from pipecat.audio.vad.silero import SileroVADAnalyzer
@@ -40,19 +39,13 @@ from a2a_voice_agent.call.prompt import (
     build_system_prompt,
     cap_warning,
     disclosure_text,
+    stall_lines,
 )
 from a2a_voice_agent.call.services import Services, build_services
 from a2a_voice_agent.call.session import CallSession
-from a2a_voice_agent.call.tools import TOOLS
-from a2a_voice_agent.contract import (
-    Brief,
-    Escalation,
-    EscalationAnswer,
-    Outcome,
-)
-
-# How the conversation layer asks the Principal a question it has no authority to answer.
-EscalationHandler = Callable[[Escalation], Awaitable[EscalationAnswer | None]]
+from a2a_voice_agent.call.stall import EscalationHandler, Stall
+from a2a_voice_agent.call.tools import call_tools
+from a2a_voice_agent.contract import Brief, Outcome
 
 
 class _DisclosureOnFirstResponse(FrameProcessor):
@@ -164,6 +157,7 @@ def _build_pipeline(
     call_cap: FrameProcessor,
     disclosure: FrameProcessor,
     hang_up: FrameProcessor,
+    stall: Stall,
     audio_buffer: AudioBufferProcessor | None,
 ) -> Pipeline:
     """Build the pipeline for a call."""
@@ -177,6 +171,7 @@ def _build_pipeline(
             services.llm,
             disclosure,
             hang_up,
+            stall,
             services.tts,
             transport.output(),
             *recorder,
@@ -209,7 +204,8 @@ async def run_call(
     services = build_services(brief, config, system_prompt)
 
     session = CallSession()
-    context = LLMContext(tools=TOOLS)
+    stall = Stall(escalate, config.stall_budget_secs, stall_lines(brief))
+    context = LLMContext(tools=call_tools(stall.hold))
     aggregators = LLMContextAggregatorPair(
         context,
         # Turn-taking keeps the framework's default stop strategy, Smart Turn v3, which does not
@@ -234,6 +230,7 @@ async def run_call(
             call_cap,
             disclosure,
             _HangUpAfterGoodbye(session),
+            stall,
             audio_buffer,
         ),
         name="callee_call",

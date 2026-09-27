@@ -1,5 +1,5 @@
 """The system prompt carries every Constraint the agent may not break, and every language has a
-Disclosure.
+Disclosure and the fixed lines of a Stall.
 
 The prompt's wording is deliberately not asserted: it is the experimental surface of this work.
 """
@@ -12,7 +12,12 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from a2a_voice_agent.call.config import CallConfig
-from a2a_voice_agent.call.prompt import PromptVariables, build_system_prompt, disclosure_text
+from a2a_voice_agent.call.prompt import (
+    PromptVariables,
+    build_system_prompt,
+    disclosure_text,
+    stall_lines,
+)
 from a2a_voice_agent.contract import Brief, Language
 
 NOW = PromptVariables(now=datetime(2026, 9, 19, 12, 0, tzinfo=ZoneInfo("Europe/Prague")))
@@ -48,3 +53,18 @@ def test_czech_brief_gets_a_different_disclosure_from_english(
     make_brief: Callable[..., Brief],
 ) -> None:
     assert disclosure_text(make_brief(language="cs")) != disclosure_text(make_brief(language="en"))
+
+
+@pytest.mark.parametrize("language", get_args(Language))
+def test_every_language_has_stall_lines_with_every_placeholder_filled(
+    make_brief: Callable[..., Brief], language: str
+) -> None:
+    lines = stall_lines(make_brief(language=language))
+
+    assert "{" not in lines.acknowledgement + lines.check_in
+
+
+def test_czech_brief_gets_different_stall_lines_from_english(
+    make_brief: Callable[..., Brief],
+) -> None:
+    assert stall_lines(make_brief(language="cs")) != stall_lines(make_brief(language="en"))

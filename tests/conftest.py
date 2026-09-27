@@ -1,5 +1,6 @@
 """Shared fixtures."""
 
+import asyncio
 import copy
 import os
 from collections.abc import Callable
@@ -8,7 +9,8 @@ from typing import Any
 import pytest
 
 from a2a_voice_agent.call.config import CallConfig
-from a2a_voice_agent.contract import Brief
+from a2a_voice_agent.call.stall import EscalationHandler
+from a2a_voice_agent.contract import Brief, Escalation, EscalationAnswer
 
 # Callee and Principal numbers are in Ofcom's range reserved for fiction.
 _BRIEF_DATA: dict[str, Any] = {
@@ -58,3 +60,46 @@ def make_config(monkeypatch: pytest.MonkeyPatch) -> Callable[..., CallConfig]:
         return CallConfig(**values)
 
     return _make
+
+
+# Stand-ins for the Principal's side of an Escalation.
+
+
+@pytest.fixture
+def booking_question() -> Escalation:
+    """A question a booking call might put to the Principal."""
+    return Escalation(
+        question="The only table on Saturday is at 21:00. Is that acceptable?",
+        options=["Take 21:00", "Decline"],
+    )
+
+
+@pytest.fixture
+def asked() -> list[Escalation]:
+    """Every question put to a handler made by ``answering``, in order."""
+    return []
+
+
+@pytest.fixture
+def answering(asked: list[Escalation]) -> Callable[[str | None], EscalationHandler]:
+    """Make a handler that answers at once with the given text, or with no answer for None."""
+
+    def make(answer: str | None) -> EscalationHandler:
+        async def escalate(escalation: Escalation) -> EscalationAnswer | None:
+            asked.append(escalation)
+            return EscalationAnswer(text=answer) if answer else None
+
+        return escalate
+
+    return make
+
+
+@pytest.fixture
+def never_answering() -> EscalationHandler:
+    """A handler that waits for ever, until it is cancelled."""
+
+    async def escalate(escalation: Escalation) -> EscalationAnswer | None:
+        await asyncio.Event().wait()
+        return None
+
+    return escalate

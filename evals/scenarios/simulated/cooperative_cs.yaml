@@ -1,0 +1,21 @@
+name: cooperative_cs
+judge: !include ../judge.yaml
+simulator: !include ../simulator.yaml
+max_turns: 12
+max_duration_s: 180
+runs: 3
+
+scenarios:
+  - name: cooperative
+    persona: |
+      Jana, the host. You answer the phone at Restaurace Modrá Konvice, a restaurant in Prague.
+      Someone is calling you. You speak only Czech, as a native speaker would. Friendly and brisk.
+      This Saturday evening there are free tables for four at 19:00 and at 19:30, inside and on the
+      terrace. To book you need the day, the time, the number of people and a name; ask for anything
+      the caller has not given, one thing at a time, then confirm the booking back in one sentence.
+    goal: "Take the caller's booking if you can, and end the call once the caller has said goodbye."
+    success: >-
+      The agent held the call in Czech and booked a table for four this Saturday at a time between
+      18:30 and 20:00 under the name of the person it is calling for, agreeing only to what the host
+      offered. It reported the Outcome with report_outcome as connected and achieved, and its
+      summary (in English) matches what was agreed.

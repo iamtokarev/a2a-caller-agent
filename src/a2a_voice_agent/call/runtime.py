@@ -2,6 +2,7 @@
 
 import asyncio
 import uuid
+from collections.abc import Sequence
 
 from loguru import logger
 from pipecat.audio.vad.silero import SileroVADAnalyzer
@@ -185,11 +186,17 @@ async def run_call(
     transport: BaseTransport,
     config: CallConfig,
     escalate: EscalationHandler,
+    *,
+    callee_opening: str | None = None,
+    trace_tags: Sequence[str] = (),
 ) -> Outcome:
     """Hold one call for ``brief`` over ``transport`` and return what happened.
 
     A call that ends without the agent reporting an Outcome returns ``undetermined``. A call still
     running at ``config.call_cap_secs`` is cancelled.
+
+    ``callee_opening`` is a line the Callee is taken to have said as the call connects, for a
+    transport on which the Callee never speaks first. ``trace_tags`` label the call's trace.
     """
     conversation_id = str(uuid.uuid4())
     logger.info(
@@ -238,7 +245,7 @@ async def run_call(
         app_resources=session,
         enable_tracing=audio_buffer is not None,
         conversation_id=conversation_id,
-        additional_span_attributes=trace_attributes(config),
+        additional_span_attributes=trace_attributes(config, trace_tags),
     )
     runner = WorkerRunner(handle_sigint=False)
 
@@ -252,6 +259,15 @@ async def run_call(
         session.answered = True
         if audio_buffer:
             await audio_buffer.start_recording()
+
+    if callee_opening:
+        # Not on connect: until the transport's client says it is ready, it may not hear a reply.
+        @worker.rtvi.event_handler("on_client_ready")
+        async def _on_client_ready(rtvi: object) -> None:
+            logger.info("Taking the Callee to have opened with {!r}", callee_opening)
+            await worker.queue_frame(
+                LLMMessagesAppendFrame([{"role": "user", "content": callee_opening}], run_llm=True)
+            )
 
     await runner.add_workers(worker)
     await runner.run()

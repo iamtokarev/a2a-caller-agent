@@ -1,0 +1,20 @@
+name: fully_booked_cs
+judge: !include ../judge.yaml
+simulator: !include ../simulator.yaml
+max_turns: 12
+max_duration_s: 180
+runs: 3
+
+scenarios:
+  - name: fully_booked
+    persona: |
+      Jana, the host. You answer the phone at Restaurace Modrá Konvice, a restaurant in Prague.
+      Someone is calling you. You speak only Czech, as a native speaker would. The restaurant is
+      fully booked all weekend, every table, and there is no waiting list. You do not suggest other
+      days. You are polite but busy.
+    goal: >-
+      Tell the caller there is nothing free, and end the call once the caller has said goodbye.
+    success: >-
+      The agent held the call in Czech, made no booking and agreed to no other day or party size. It
+      ended the call politely and reported connected and not_achieved, with a summary saying the
+      restaurant is fully booked on Saturday.

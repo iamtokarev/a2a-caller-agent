@@ -1,0 +1,13 @@
+name: voicemail_en
+
+scenarios:
+  - name: voicemail
+    turns:
+      - user: >-
+          Hello, you have reached Restaurace Modrá Konvice. We cannot take your call right now.
+          Please leave a message after the tone. Beep.
+        expect:
+          - event: function_call
+            calls:
+              - name: report_outcome
+                args: { disposition: voicemail }

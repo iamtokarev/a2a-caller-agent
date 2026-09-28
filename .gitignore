@@ -22,3 +22,6 @@ skills-lock.json
 
 # Local run records from manual calls
 runs/
+
+# Eval suite output
+eval-runs/

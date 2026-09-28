@@ -1,0 +1,31 @@
+{
+  "objective": "Zarezervovat stůl pro čtyři osoby na tuto sobotu večer, kolem 19:00, na jméno Alex Morgan.",
+  "callee": {
+    "name": "Restaurace Modrá Konvice",
+    "number": "+44 20 7946 0123"
+  },
+  "constraints": [
+    {
+      "description": "Rezervace musí být na tuto sobotu, ne na jiný den.",
+      "negotiable": false
+    },
+    {
+      "description": "Stůl musí být pro čtyři osoby.",
+      "negotiable": false
+    },
+    {
+      "description": "Kolem 19:00; vyhovuje jakýkoli čas mezi 18:30 a 20:00.",
+      "negotiable": true
+    },
+    {
+      "description": "Přednostně stůl uvnitř.",
+      "negotiable": true
+    }
+  ],
+  "principal": {
+    "name": "Alex Morgan",
+    "contact_phone": "+44 20 7946 0456"
+  },
+  "language": "cs",
+  "useful_until": "2026-09-19T18:00:00+02:00"
+}

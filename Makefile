@@ -19,3 +19,6 @@ precommit:
 
 test:
 	uv run pytest
+
+eval:
+	PYTHONPATH=. uv run pipecat eval suite evals/manifest.yaml

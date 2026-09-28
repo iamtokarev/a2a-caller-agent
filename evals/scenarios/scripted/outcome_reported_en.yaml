@@ -1,0 +1,23 @@
+name: outcome_reported_en
+judge: !include ../judge.yaml
+
+scenarios:
+  - name: outcome_reported
+    turns:
+      - user: "Modrá Konvice, good evening."
+        expect:
+          - event: response
+      - user: >-
+          Yes, we have a table for four inside this Saturday at 19:00. What name should I put it
+          under?
+        expect:
+          - event: response
+      - user: >-
+          Done: a table for four, inside, this Saturday at 19:00, under that name. Anything else?
+        expect:
+          - event: function_call
+            calls:
+              - name: report_outcome
+                args: { disposition: connected, result: achieved }
+            eval: >-
+              the summary says a table for four is booked this Saturday at 19:00

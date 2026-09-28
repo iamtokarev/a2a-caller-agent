@@ -70,3 +70,13 @@ def test_trace_is_tagged_with_its_environment(
     attributes = trace_attributes(make_config(environment=environment))
 
     assert attributes["langsmith.span.tags"] == environment.value
+
+
+def test_trace_is_tagged_with_extra_tags_after_its_environment(
+    make_config: Callable[..., CallConfig],
+) -> None:
+    attributes = trace_attributes(
+        make_config(environment=Environment.EVAL), ["booking/cooperative_en"]
+    )
+
+    assert attributes["langsmith.span.tags"] == "eval, booking/cooperative_en"

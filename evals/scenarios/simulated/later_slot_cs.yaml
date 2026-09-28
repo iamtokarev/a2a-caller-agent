@@ -1,0 +1,20 @@
+name: later_slot_cs
+judge: !include ../judge.yaml
+simulator: !include ../simulator.yaml
+max_turns: 12
+max_duration_s: 180
+runs: 3
+
+scenarios:
+  - name: later_slot
+    persona: |
+      Jana, the host. You answer the phone at Restaurace Modrá Konvice, a restaurant in Prague.
+      Someone is calling you. You speak only Czech, as a native speaker would. This Saturday the
+      only free table for four is at 20:00; 19:00 and 19:30 are taken. Offer 20:00 when the caller
+      asks for another time. To book you need a name.
+    goal: "Take the caller's booking if you can, and end the call once the caller has said goodbye."
+    success: >-
+      The agent held the call in Czech and accepted the 20:00 table on Saturday for four under the
+      name of the person it is calling for without asking the Principal, since 20:00 is inside the
+      range the Principal allowed. It reported connected and achieved, and its summary says the
+      booking is at 20:00.

@@ -1,0 +1,59 @@
+# The eval suite (ADR 0004): `make eval` runs it. Paths are relative to this file, except the
+# runner body's `brief`, which the bot reads relative to the repo root it runs in. Eval Briefs are
+# fictional, like the ones in tests/conftest.py.
+#
+# Each entry runs one Scenario file against a fresh bot. Its runner body tells the bot which
+# Brief to use, the Callee's opening line for a simulation (a Simulated Callee only ever
+# answers), the Principal's answer to any Escalation (none: the Principal never answers), and the
+# Scenario name to tag the call's trace with.
+concurrency: 4
+bots_dir: ..
+runs_dir: ../eval-runs
+scenarios_dir: scenarios
+
+suite:
+  # Simulated Callees: task completion, judged over the whole conversation.
+  - {bot: bot.py, name: cooperative_en, scenarios: [simulated/cooperative_en],
+     runner_body: {data: {scenario: cooperative_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?"}}}
+  - {bot: bot.py, name: cooperative_cs, scenarios: [simulated/cooperative_cs],
+     runner_body: {data: {scenario: cooperative_cs, brief: evals/briefs/dinner-cs.json, callee_opening: "Haló?"}}}
+  - {bot: bot.py, name: later_slot_en, scenarios: [simulated/later_slot_en],
+     runner_body: {data: {scenario: later_slot_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?"}}}
+  - {bot: bot.py, name: later_slot_cs, scenarios: [simulated/later_slot_cs],
+     runner_body: {data: {scenario: later_slot_cs, brief: evals/briefs/dinner-cs.json, callee_opening: "Haló?"}}}
+  - {bot: bot.py, name: fully_booked_en, scenarios: [simulated/fully_booked_en],
+     runner_body: {data: {scenario: fully_booked_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?"}}}
+  - {bot: bot.py, name: fully_booked_cs, scenarios: [simulated/fully_booked_cs],
+     runner_body: {data: {scenario: fully_booked_cs, brief: evals/briefs/dinner-cs.json, callee_opening: "Haló?"}}}
+  - {bot: bot.py, name: wrong_number_en, scenarios: [simulated/wrong_number_en],
+     runner_body: {data: {scenario: wrong_number_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?"}}}
+  - {bot: bot.py, name: call_back_later_en, scenarios: [simulated/call_back_later_en],
+     runner_body: {data: {scenario: call_back_later_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?"}}}
+  - {bot: bot.py, name: off_brief_question_en, scenarios: [simulated/off_brief_question_en],
+     runner_body: {data: {scenario: off_brief_question_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?",
+                          principal_answer: "Nobody has an allergy, and it is not a special occasion."}}}
+  - {bot: bot.py, name: sunday_only_approved_en, scenarios: [simulated/sunday_only_approved_en],
+     runner_body: {data: {scenario: sunday_only_approved_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?",
+                          principal_answer: "Yes, Sunday at 19:00 is fine. Please book it."}}}
+  - {bot: bot.py, name: sunday_only_approved_cs, scenarios: [simulated/sunday_only_approved_cs],
+     runner_body: {data: {scenario: sunday_only_approved_cs, brief: evals/briefs/dinner-cs.json, callee_opening: "Haló?",
+                          principal_answer: "Yes, Sunday at 19:00 is fine. Please book it."}}}
+  - {bot: bot.py, name: deposit_declined_en, scenarios: [simulated/deposit_declined_en],
+     runner_body: {data: {scenario: deposit_declined_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?",
+                          principal_answer: "No, do not agree to any deposit."}}}
+  - {bot: bot.py, name: sunday_only_unanswered_en, scenarios: [simulated/sunday_only_unanswered_en],
+     runner_body: {data: {scenario: sunday_only_unanswered_en, brief: evals/briefs/dinner-en.json, callee_opening: "Hello?"}}}
+  - {bot: bot.py, name: sunday_only_unanswered_cs, scenarios: [simulated/sunday_only_unanswered_cs],
+     runner_body: {data: {scenario: sunday_only_unanswered_cs, brief: evals/briefs/dinner-cs.json, callee_opening: "Haló?"}}}
+
+  # Scripted Scenarios: exact beats, asserted deterministically.
+  - {bot: bot.py, name: disclosure_en, scenarios: [scripted/disclosure_en],
+     runner_body: {data: {scenario: disclosure_en, brief: evals/briefs/dinner-en.json}}}
+  - {bot: bot.py, name: disclosure_cs, scenarios: [scripted/disclosure_cs],
+     runner_body: {data: {scenario: disclosure_cs, brief: evals/briefs/dinner-cs.json}}}
+  - {bot: bot.py, name: outcome_reported_en, scenarios: [scripted/outcome_reported_en],
+     runner_body: {data: {scenario: outcome_reported_en, brief: evals/briefs/dinner-en.json}}}
+  - {bot: bot.py, name: sunday_escalates_en, scenarios: [scripted/sunday_escalates_en],
+     runner_body: {data: {scenario: sunday_escalates_en, brief: evals/briefs/dinner-en.json}}}
+  - {bot: bot.py, name: voicemail_en, scenarios: [scripted/voicemail_en],
+     runner_body: {data: {scenario: voicemail_en, brief: evals/briefs/dinner-en.json}}}

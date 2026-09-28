@@ -1,0 +1,22 @@
+name: sunday_only_approved_cs
+judge: !include ../judge.yaml
+simulator: !include ../simulator.yaml
+max_turns: 12
+max_duration_s: 180
+runs: 3
+
+scenarios:
+  - name: sunday_only_approved
+    persona: |
+      Jana, the host. You answer the phone at Restaurace Modrá Konvice, a restaurant in Prague.
+      Someone is calling you. You speak only Czech, as a native speaker would. This Saturday is
+      fully booked. The only free table for four this weekend is on Sunday at 19:00; offer it when
+      Saturday is ruled out. If the caller needs a moment to check, you wait. To book you need a
+      name.
+    goal: "Fill the Sunday table if you can, and end the call once the caller has said goodbye."
+    success: >-
+      The Principal answered ask_principal with "Yes, Sunday at 19:00 is fine. Please book it." The
+      agent held the call in Czech, did not accept Sunday on its own: it asked the Principal with
+      ask_principal before agreeing to Sunday. Once the Principal approved, it booked Sunday at
+      19:00 for four under the name of the person it is calling for and reported connected and
+      achieved, with a summary saying the booking is on Sunday, not Saturday.

@@ -8,6 +8,35 @@ claim below is read from the `v1.8.1` tag, not from `main` and not from `.venv`.
 Example scenarios are read from `pipecat-ai/pipecat-examples` at commit
 `87ede7793edc6b9b49797dc8d3bc6cb51f6f9252`.
 
+> **Update 2026-09-28 — read against v1.12.0, which this repo moves to for evals (ADR 0004).**
+> Much of this document describes 1.8.1 and no longer holds. Specifically:
+>
+> - **Simulated scenarios exist** (since 1.9.0). An LLM plays the other party from a `persona:`
+>   and `goal:`, and a judge decides a `success:` criterion over the whole conversation. So
+>   "only timing is dynamic, never content" (§2, §8) is obsolete: a reactive Callee is a YAML
+>   file. **The persona only ever answers the bot.** An agent that waits for the other side to
+>   speak first ends the run as `silence`, and no option lets the persona open.
+> - **Function-call arguments are judgeable.** Simulations force the full function-call report
+>   level, and the judge sees each call's name and arguments in place. Scripted `function_call`
+>   expectations take an `eval:`. So "summary faithful to the call is not expressible in-band"
+>   (§3) no longer holds.
+> - **The judge is a classifier** (1.12.0). `service: openai` is deprecated, and its
+>   `endpoint:` was never honoured (§3 is wrong on that even for 1.8.1). Any other provider,
+>   OpenRouter included, is a `factory:` returning an LLM service. That service must support
+>   strict structured outputs.
+> - **Scenario files hold a `scenarios:` list** (1.11.0). The Python API was renamed
+>   (`EvalScriptScenario`, `EvalScenarioFile.load`, `pipecat.evals.session`), and suite entries
+>   take `runner_body: {path:}` or `{data:}`. A `data:` body keeps the bot's working directory;
+>   a `path:` body moves it to the file's directory. There is still no per-entry environment.
+> - **Text mode skips TTS for the whole session** (§4, §6).
+>   - At 1.8.1, only the direct reply to a `send-text` was skipped, so our goodbye and any
+>     system-triggered reply were still synthesised.
+>   - An `LLMTextFrame` injected by a processor downstream of the LLM, such as our Disclosure, is
+>     still synthesised, because only the LLM stamps `skip_tts`.
+> - **`results.jsonl` carries `events_seen` only for runs that did not pass** (§7).
+> - **One bot process serves one call.** Under `-t eval` the runner calls `bot()` once. Our bot
+>   ends the call itself, so every run needs a fresh process, which means a suite.
+
 Vocabulary follows [CONTEXT.md](../../CONTEXT.md). Note one unavoidable collision: Pipecat Evals
 calls the scripted side of a scenario the **`user:`**. In our terms that party is the **Callee** —
 the restaurant. Wherever this document says `user:` in code voice, it means the Callee's lines.

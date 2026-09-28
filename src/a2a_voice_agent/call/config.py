@@ -11,6 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Environment(StrEnum):
     LOCAL = "local"
     PROD = "prod"
+    EVAL = "eval"
 
 
 class CallConfig(BaseSettings):

@@ -38,6 +38,7 @@ is held in `InMemoryTaskStore`.
   independently. Accepted for one laptop and one or two concurrent calls. **The registry is itself
   the seam** that makes a later move to subprocesses a swap rather than a rewrite.
 - **The eval harness must capture its own records.** With an in-memory store, nothing durable
-  survives a restart for it to score against.
+  survives a restart for it to score against. Settled by ADR 0004: Pipecat's suite writes
+  `results.jsonl` and per-run logs, and LangSmith holds the traces.
 - **A Callee hanging up mid-stall is invisible to the Client until it answers.** Bounded by the
   stall budget plus the Principal's response time.

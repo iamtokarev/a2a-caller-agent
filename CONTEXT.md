@@ -69,3 +69,13 @@ who.
 **Result**:
 Whether the Objective was achieved, independent of what the phone call did. A Callee who answers and
 declines is a successful Disposition with a negative Result.
+
+### Evaluation
+
+**Scenario**:
+A repeatable call placed against a stand-in Callee to check the agent's behaviour. Either scripted
+(the Callee's lines are fixed) or simulated (a Simulated Callee plays the part).
+
+**Simulated Callee**:
+A language model playing the Callee from a written persona, reacting to what the agent says.
+_Avoid_: user, caller, persona (as the name of the party)

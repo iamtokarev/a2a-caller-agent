@@ -28,10 +28,11 @@ answered by choosing one or replying in free text.
 
 ## Consequences
 
-- **Task-success scoring is LLM-judged, with no deterministic fallback.** Dropping the per-Constraint
-  verdict means nothing in the Outcome mechanically reports whether a non-negotiable Constraint held;
-  a judge must infer it from `summary`. Accepted knowingly — it is noisier than a boolean would have
-  been.
+- **Task-success scoring is LLM-judged.** Dropping the per-Constraint verdict means nothing in the
+  Outcome mechanically reports whether a non-negotiable Constraint held; a judge must infer it.
+  Accepted knowingly — it is noisier than a boolean would have been. Softened since: the Outcome is
+  reported through a function call, so the judge reads it — `summary` included — against the whole
+  conversation, and `disposition` and `result` can be asserted exactly (ADR 0004).
 - **The Outcome carries no transcript.** Prose lives in `summary` only. This keeps a recording of an
   identifiable person from crossing the A2A boundary, where retention is no longer ours to control.
 - **`language` and `principal.name` are required with no defaults**, because both are spoken aloud in

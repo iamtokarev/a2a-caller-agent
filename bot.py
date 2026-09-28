@@ -6,12 +6,14 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
-from pipecat.runner.types import RunnerArguments
+from pipecat.evals.transport import EvalTransportParams
+from pipecat.runner.types import EvalRunnerArguments, RunnerArguments
 from pipecat.runner.utils import create_transport
 from pipecat.transports.base_transport import TransportParams
+from pydantic import BaseModel, ConfigDict
 
 from a2a_voice_agent.call import run_call
-from a2a_voice_agent.call.config import CallConfig
+from a2a_voice_agent.call.config import CallConfig, Environment
 from a2a_voice_agent.contract import Brief, Escalation, EscalationAnswer
 from a2a_voice_agent.utils import load_brief
 
@@ -20,13 +22,38 @@ load_dotenv(override=True)
 DEFAULT_BRIEF = Path("briefs/dinner-en.json")
 RUNS_DIR = Path("runs")
 
+# Evals measure the shipped call timings, not the ones a local .env tunes for manual calls.
+SHIPPED_TIMINGS = ("stall_budget_secs", "call_cap_secs", "cap_warning_lead_secs")
+
 
 transport_params = {
     "webrtc": lambda: TransportParams(
         audio_in_enabled=True,
         audio_out_enabled=True,
     ),
+    "eval": lambda: EvalTransportParams(
+        audio_in_enabled=True,
+        audio_out_enabled=True,
+    ),
 }
+
+
+class EvalRun(BaseModel):
+    """What an eval suite tells the bot about one Scenario, through the runner body."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    scenario: str | None = None
+    brief: Path | None = None
+    # A Simulated Callee only ever answers, so the Callee is taken to have opened with this.
+    callee_opening: str | None = None
+    # The Principal's answer to any Escalation; none means the Principal never answers.
+    principal_answer: str | None = None
+
+    async def escalate(self, escalation: Escalation) -> EscalationAnswer | None:
+        """Answer as the scripted Principal would, at once."""
+        logger.info("Escalation answered by the scripted Principal: {}", escalation.question)
+        return EscalationAnswer(text=self.principal_answer) if self.principal_answer else None
 
 
 async def _read_line() -> str:
@@ -65,18 +92,36 @@ async def escalate(escalation: Escalation) -> EscalationAnswer | None:
     return EscalationAnswer(text=text)
 
 
+def _eval_config() -> CallConfig:
+    """The call's settings from the environment, with the eval environment and the shipped
+    timings pinned: explicit values win over whatever the environment says."""
+    shipped = {name: CallConfig.model_fields[name].default for name in SHIPPED_TIMINGS}
+    return CallConfig(environment=Environment.EVAL, **shipped)
+
+
 def _brief_path() -> Path:
     return Path(os.getenv("BRIEF_PATH", DEFAULT_BRIEF))
 
 
 async def bot(runner_args: RunnerArguments) -> None:
     """The runner calls this once per connection: one connection, one call, one Outcome."""
-    brief_path = _brief_path()
-    brief: Brief = load_brief(brief_path)
-    config = CallConfig()  # type: ignore[call-arg]
-
     transport = await create_transport(runner_args, transport_params)
-    outcome = await run_call(brief, transport, config, escalate)
+
+    if isinstance(runner_args, EvalRunnerArguments):
+        run = EvalRun.model_validate(runner_args.body or {})
+        brief: Brief = load_brief(run.brief or _brief_path())
+        outcome = await run_call(
+            brief,
+            transport,
+            _eval_config(),
+            run.escalate,
+            callee_opening=run.callee_opening,
+            trace_tags=[run.scenario] if run.scenario else [],
+        )
+    else:
+        brief = load_brief(_brief_path())
+        config = CallConfig()  # type: ignore[call-arg]
+        outcome = await run_call(brief, transport, config, escalate)
 
     logger.info("Outcome: {}", outcome.model_dump_json())
 

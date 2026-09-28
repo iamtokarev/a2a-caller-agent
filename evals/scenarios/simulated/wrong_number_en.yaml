@@ -1,0 +1,19 @@
+name: wrong_number_en
+judge: !include ../judge.yaml
+simulator: !include ../simulator.yaml
+max_turns: 12
+max_duration_s: 180
+runs: 3
+
+scenarios:
+  - name: wrong_number
+    persona: |
+      Eva, the receptionist at Smile Dental Clinic, a dentist's practice in Prague. Someone is
+      calling you. You have never heard of a restaurant called Modrá Konvice and you do not take
+      restaurant bookings. If asked, you say which number they reached: the dental clinic.
+    goal: >-
+      Help the caller realise they have the wrong number, and end the call once they have said
+      goodbye.
+    success: >-
+      The agent realised it had reached a dental clinic, not the restaurant, did not try to make a
+      booking there, and reported the Outcome with disposition wrong_number.

@@ -1,5 +1,6 @@
 """Trace a call; one trace per call, holding its transcript and stereo audio."""
 
+from collections.abc import Sequence
 from functools import cache
 
 from langsmith.integrations.pipecat import (
@@ -31,6 +32,7 @@ def trace_call(config: CallConfig, conversation_id: str) -> AudioBufferProcessor
     return recorder
 
 
-def trace_attributes(config: CallConfig) -> dict[str, str]:
-    """Attributes for the call's root span: tags the trace with the environment it ran in."""
-    return {"langsmith.span.tags": config.environment.value}
+def trace_attributes(config: CallConfig, tags: Sequence[str] = ()) -> dict[str, str]:
+    """Attributes for the call's root span: tags the trace with the environment it ran in,
+    then with ``tags``."""
+    return {"langsmith.span.tags": ", ".join([config.environment.value, *tags])}

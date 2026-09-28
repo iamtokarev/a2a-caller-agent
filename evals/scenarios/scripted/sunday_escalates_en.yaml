@@ -1,0 +1,15 @@
+name: sunday_escalates_en
+
+scenarios:
+  - name: sunday_escalates
+    turns:
+      - user: "Modrá Konvice, good evening."
+        expect:
+          - event: response
+      - user: >-
+          I'm sorry, Saturday is fully booked. I could do Sunday at 19:00 for four. Shall I book
+          that?
+        expect:
+          - event: function_call
+            calls:
+              - name: ask_principal

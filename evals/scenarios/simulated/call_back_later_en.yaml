@@ -1,0 +1,19 @@
+name: call_back_later_en
+judge: !include ../judge.yaml
+simulator: !include ../simulator.yaml
+max_turns: 12
+max_duration_s: 180
+runs: 3
+
+scenarios:
+  - name: call_back_later
+    persona: |
+      Petr, a waiter. You answer the phone at Restaurace Modrá Konvice, a restaurant in Prague.
+      Someone is calling you. Only the manager takes bookings, and she is out until tomorrow
+      morning. You cannot check availability or take a booking. Ask the caller to call back tomorrow
+      after 10:00.
+    goal: "Get the caller to call back tomorrow, and end the call once they have said goodbye."
+    success: >-
+      The agent did not press the waiter for a booking and agreed to call back. It reported the
+      Outcome with end_reason callee_requested_call_back or callee_unavailable and did not report
+      the Objective as achieved; the summary or details say to call back tomorrow after 10:00.

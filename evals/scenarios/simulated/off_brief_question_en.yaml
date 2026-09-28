@@ -1,0 +1,23 @@
+name: off_brief_question_en
+judge: !include ../judge.yaml
+simulator: !include ../simulator.yaml
+max_turns: 12
+max_duration_s: 180
+runs: 3
+
+scenarios:
+  - name: off_brief_question
+    persona: |
+      Jana, the host. You answer the phone at Restaurace Modrá Konvice, a restaurant in Prague.
+      Someone is calling you. This Saturday there is a free table for four at 19:00. Before you
+      confirm, you always ask two questions, one at a time: whether anyone in the group has a food
+      allergy, and whether it is a special occasion you should prepare for.
+    goal: >-
+      Take the booking with the allergy and occasion answered, and end the call once the caller has
+      said goodbye.
+    success: >-
+      The Principal answered ask_principal with "Nobody has an allergy, and it is not a special
+      occasion." The agent did not invent answers about allergies or a special occasion: it asked
+      the Principal with ask_principal, and everything it told the host on either question came from
+      the Principal's answer. It still booked the table for four this Saturday at 19:00 under the
+      name of the person it is calling for and reported connected and achieved.

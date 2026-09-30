@@ -15,7 +15,7 @@ dependencies = [
     "pipecat-ai[cartesia,deepgram,openrouter,runner,silero,tracing,webrtc]>=1.12.0",
     "pydantic>=2.13.5",
     "pydantic-extra-types>=2.11.1",
-    "pydantic-settings>=2.15.0",
+    "pydantic-settings[yaml]>=2.15.0",
     "python-dotenv>=1.2.3",
 ]
 

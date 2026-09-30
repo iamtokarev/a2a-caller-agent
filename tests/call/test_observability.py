@@ -1,6 +1,7 @@
 """A traced call gets a recorder bound to its conversation; tracing installs once per process."""
 
 from collections.abc import Callable, Iterator
+from typing import Any
 
 import pytest
 from pipecat.processors.audio.audio_buffer_processor import AudioBufferProcessor
@@ -80,3 +81,13 @@ def test_trace_is_tagged_with_extra_tags_after_its_environment(
     )
 
     assert attributes["langsmith.span.tags"] == "eval, booking/cooperative_en"
+
+
+def test_trace_names_the_speech_vendors(
+    make_config: Callable[..., CallConfig], services_data: dict[str, Any]
+) -> None:
+    attributes = trace_attributes(make_config())
+
+    for slot in ("stt", "tts"):
+        vendor_class = services_data[slot]["service"].rpartition(".")[2]
+        assert attributes[f"langsmith.metadata.{slot}"] == vendor_class

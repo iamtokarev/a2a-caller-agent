@@ -42,7 +42,7 @@ from a2a_voice_agent.call.prompt import (
     disclosure_text,
     stall_lines,
 )
-from a2a_voice_agent.call.services import Services, build_services
+from a2a_voice_agent.call.services import Services
 from a2a_voice_agent.call.session import CallSession
 from a2a_voice_agent.call.stall import EscalationHandler, Stall
 from a2a_voice_agent.call.tools import call_tools
@@ -208,7 +208,7 @@ async def run_call(
 
     variables = PromptVariables.at(config.timezone)
     system_prompt = build_system_prompt(brief, config, variables)
-    services = build_services(brief, config, system_prompt)
+    services = config.services.build(brief, system_prompt)
 
     session = CallSession()
     stall = Stall(escalate, config.stall_budget_secs, stall_lines(brief))

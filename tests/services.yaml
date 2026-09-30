@@ -1,0 +1,24 @@
+# The services file the tests run against, fixed so that editing the shipped services.yaml at the
+# repository root never changes what the tests see. Every key variable here is faked by the fixtures.
+
+llm:
+  model: openai/gpt-5.6-terra
+  api_key_env: OPENROUTER_API_KEY
+
+stt:
+  service: pipecat.services.deepgram.stt.DeepgramSTTService
+  api_key_env: DEEPGRAM_API_KEY
+  settings:
+    model: nova-3
+    interim_results: true
+    profanity_filter: true
+    smart_format: true
+
+tts:
+  service: pipecat.services.cartesia.tts.CartesiaTTSService
+  api_key_env: CARTESIA_API_KEY
+  settings:
+    model: sonic-3.6
+  voices:
+    cs: 82db1f84-5b96-4364-b04a-4c7ff80e2f8a
+    en: 47c38ca4-5f35-497b-b1a3-415245fb35e1

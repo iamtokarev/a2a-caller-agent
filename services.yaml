@@ -1,0 +1,36 @@
+# Which model and vendor fills each slot of a call. The LLM is always OpenRouter, so only its model
+# is chosen. Any Pipecat STT or TTS service can fill a speech slot: name its class and its settings.
+# Each slot names the environment variable holding its API key; secrets stay in .env.
+# The Brief sets each call's language, and picks its voice from `voices`, over anything under
+# `settings`. Read from the working directory, like .env; edit it to try a different setup.
+
+llm:
+  model: openai/gpt-5.6-terra
+  api_key_env: OPENROUTER_API_KEY
+
+stt:
+  service: pipecat.services.deepgram.stt.DeepgramSTTService
+  api_key_env: DEEPGRAM_API_KEY
+  settings:
+    model: nova-3
+    interim_results: true
+    profanity_filter: true
+    smart_format: true
+
+# tts:
+#   service: pipecat.services.cartesia.tts.CartesiaTTSService
+#   api_key_env: CARTESIA_API_KEY
+#   settings:
+#     model: sonic-3.6
+#   voices:
+#     cs: 82db1f84-5b96-4364-b04a-4c7ff80e2f8a  # Jan - Capable Coordinator, cs-CZ
+#     en: 47c38ca4-5f35-497b-b1a3-415245fb35e1  # Daniel - Modern Assistant, en-US
+
+tts:
+  service: pipecat.services.elevenlabs.tts.ElevenLabsTTSService
+  api_key_env: ELEVENLABS_API_KEY
+  settings:
+    model: eleven_flash_v2_5
+  voices:
+    cs: bF7C2fCv7Zf30iT84wZ1
+    en: r1KmysJdVYZjJCm4mL3b

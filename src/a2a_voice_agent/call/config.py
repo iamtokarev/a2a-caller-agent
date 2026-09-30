@@ -4,8 +4,10 @@ from enum import StrEnum
 from typing import Self
 from zoneinfo import ZoneInfo
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from a2a_voice_agent.call.services import ServicesConfig
 
 
 class Environment(StrEnum):
@@ -28,19 +30,16 @@ class CallConfig(BaseSettings):
     environment: Environment = Field(default=Environment.PROD, validation_alias="ENVIRONMENT")
     tracing: bool = Field(default=False, validation_alias="LANGSMITH_TRACING")
 
-    llm_model: str = "openai/gpt-5.6-terra"
-    tts_model: str = "sonic-3.6"
+    # Which model and vendor fills each slot of the call, from services.yaml.
+    services: ServicesConfig = Field(
+        default_factory=lambda: ServicesConfig()  # type: ignore[call-arg]
+    )
 
-    voice_id_override: str | None = None
     timezone: ZoneInfo = ZoneInfo("Europe/Prague")  # Fixed to Prague for v1
 
     stall_budget_secs: float = Field(default=60.0, gt=0)
     call_cap_secs: float = Field(default=300.0, gt=0)
     cap_warning_lead_secs: float = Field(default=30.0, gt=0)
-
-    deepgram_api_key: SecretStr = Field(validation_alias="DEEPGRAM_API_KEY")
-    cartesia_api_key: SecretStr = Field(validation_alias="CARTESIA_API_KEY")
-    openrouter_api_key: SecretStr = Field(validation_alias="OPENROUTER_API_KEY")
 
     @model_validator(mode="after")
     def _timers_fit_inside_cap(self) -> Self:

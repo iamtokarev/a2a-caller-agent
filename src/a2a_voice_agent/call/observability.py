@@ -34,5 +34,9 @@ def trace_call(config: CallConfig, conversation_id: str) -> AudioBufferProcessor
 
 def trace_attributes(config: CallConfig, tags: Sequence[str] = ()) -> dict[str, str]:
     """Attributes for the call's root span: tags the trace with the environment it ran in,
-    then with ``tags``."""
-    return {"langsmith.span.tags": ", ".join([config.environment.value, *tags])}
+    then with ``tags``, and names the speech vendors in its metadata."""
+    return {
+        "langsmith.span.tags": ", ".join([config.environment.value, *tags]),
+        "langsmith.metadata.stt": config.services.stt.service.__name__,
+        "langsmith.metadata.tts": config.services.tts.service.__name__,
+    }

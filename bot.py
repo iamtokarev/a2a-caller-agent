@@ -25,6 +25,9 @@ RUNS_DIR = Path("runs")
 # Evals measure the shipped call timings, not the ones a local .env tunes for manual calls.
 SHIPPED_TIMINGS = ("stall_budget_secs", "call_cap_secs", "cap_warning_lead_secs")
 
+# Loaded once, as the bot starts: a broken services.yaml stops it before it serves any call.
+CONFIG = CallConfig()
+
 
 transport_params = {
     "webrtc": lambda: TransportParams(
@@ -93,10 +96,10 @@ async def escalate(escalation: Escalation) -> EscalationAnswer | None:
 
 
 def _eval_config() -> CallConfig:
-    """The call's settings from the environment, with the eval environment and the shipped
-    timings pinned: explicit values win over whatever the environment says."""
+    """The bot's settings, with the eval environment and the shipped timings pinned over
+    whatever the environment says."""
     shipped = {name: CallConfig.model_fields[name].default for name in SHIPPED_TIMINGS}
-    return CallConfig(environment=Environment.EVAL, **shipped)
+    return CONFIG.model_copy(update={"environment": Environment.EVAL, **shipped})
 
 
 def _brief_path() -> Path:
@@ -120,8 +123,7 @@ async def bot(runner_args: RunnerArguments) -> None:
         )
     else:
         brief = load_brief(_brief_path())
-        config = CallConfig()  # type: ignore[call-arg]
-        outcome = await run_call(brief, transport, config, escalate)
+        outcome = await run_call(brief, transport, CONFIG, escalate)
 
     logger.info("Outcome: {}", outcome.model_dump_json())
 
